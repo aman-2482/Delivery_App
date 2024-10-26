@@ -1,5 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:food_delivery/pages/Signup.dart';
 import 'package:food_delivery/widget/wdiget_support.dart';
+
+import 'botoomnav.dart';
+import 'forgotpassword.dart';
+import 'home.dart';
 
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
@@ -9,6 +15,34 @@ class LogIn extends StatefulWidget {
 }
 
 class _LogInState extends State<LogIn> {
+  String email = "", password = "";
+  final _formkey = GlobalKey<FormState>();
+  TextEditingController useremailcontroller = new TextEditingController();
+  TextEditingController userpasswordcontroller = new TextEditingController();
+
+  userLogin() async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      // Check if userCredential is not null and navigate to the next page
+      if (userCredential.user != null) {
+        print("Login successful for user: ${userCredential.user!.email}");
+        // Navigate to the next screen (replace with your home page)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) =>  BottomNav()), // Change to your home page
+        );
+      }
+
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase exceptions as shown before
+    } catch (e) {
+      // Handle unexpected exceptions
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +68,7 @@ class _LogInState extends State<LogIn> {
               Container(
                 margin: EdgeInsets.only(
                     top: MediaQuery.of(context).size.height / 3),
-                height: MediaQuery.of(context).size.height / 2,
+                height: MediaQuery.of(context).size.height / 1.9,
                 width: MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -70,6 +104,7 @@ class _LogInState extends State<LogIn> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Form(
+                          key: _formkey,
                           child: Column(
                             children: [
                               SizedBox(
@@ -79,7 +114,14 @@ class _LogInState extends State<LogIn> {
                                 "Login",
                                 style: AppWidget.HeadlineTextFIeldStyle(),
                               ),
-                              TextField(
+                              TextFormField(
+                                controller: useremailcontroller,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Please enter Email";
+                                  }
+                                  return null;
+                                },
                                 decoration: InputDecoration(
                                   hintText: "Email",
                                   hintStyle: AppWidget.SemiTextFIeldStyle(),
@@ -89,7 +131,14 @@ class _LogInState extends State<LogIn> {
                               SizedBox(
                                 height: 30,
                               ),
-                              TextField(
+                              TextFormField(
+                                controller: userpasswordcontroller,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Please enter Password";
+                                  }
+                                  return null;
+                                },
                                 obscureText: true,
                                 decoration: InputDecoration(
                                   hintText: "Password",
@@ -100,29 +149,43 @@ class _LogInState extends State<LogIn> {
                               SizedBox(
                                 height: 20,
                               ),
-                              Container(
-                                alignment: Alignment.topRight,
-                                child: Text(
-                                  "Forget password",
-                                  style: AppWidget.SemiTextFIeldStyle(),
+                              GestureDetector(
+                                onTap: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> ForgotPassword()));
+                                },
+                                child: Container(
+                                  alignment: Alignment.topRight,
+                                  child: Text(
+                                    "Forget password",
+                                    style: AppWidget.SemiTextFIeldStyle(),
+                                  ),
                                 ),
                               ),
                               SizedBox(
                                 height: 60,
                               ),
                               GestureDetector(
-                                onTap: () {},
+                                onTap: () {
+                                  // Ensure the form is valid before attempting to log in
+                                  if (_formkey.currentState!.validate()) {
+                                    setState(() {
+                                      email = useremailcontroller.text;
+                                      password = userpasswordcontroller.text;
+                                    });
+                                    print("Email: $email, Password: $password");
+                                    userLogin();  // Attempt login
+                                  }
+                                },
                                 child: Material(
                                   elevation: 5.0,
                                   borderRadius: BorderRadius.circular(20),
                                   child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 8.0),
+                                    padding:
+                                    EdgeInsets.symmetric(vertical: 8.0),
                                     width: 200,
                                     decoration: BoxDecoration(
                                       color: Color(0Xffff5722),
-                                      borderRadius:
-                                      BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Center(
                                       child: Text(
@@ -147,11 +210,17 @@ class _LogInState extends State<LogIn> {
                       ),
                     ),
                     SizedBox(
-                      height: 70.0,
+                      height: 30.0,
                     ),
-                    Text(
-                      "Don't have an account? Sign up",
-                      style: AppWidget.SemiTextFIeldStyle(),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => SignUp()));
+                      },
+                      child: Text(
+                        "Don't have an account? SignUp",
+                        style: AppWidget.SemiTextFIeldStyle(),
+                      ),
                     ),
                   ],
                 ),
